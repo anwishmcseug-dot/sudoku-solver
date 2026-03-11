@@ -1,6 +1,9 @@
 # 🧩 Sudoku Solver
 
 A sleek, modern Sudoku Solver featuring a glassmorphism UI and an optimized backtracking algorithm. Enter your puzzle, hit "Solve," and watch the magic happen with delightful, staggered animations.
+
+
+
 **[🚀 Play the Live Demo Here!](https://anwishmcseug-dot.github.io/sudoku-solver/)**
 
 ## ✨ Features
