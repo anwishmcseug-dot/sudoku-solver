@@ -1,0 +1,407 @@
+/* ============================================================
+   SUDOKU SOLVER — THE VIBE (CSS)
+   A modern "frosted glass" design with some fancy background 
+   blobs and smooth animations.
+   ============================================================ */
+
+/* --- Clean Slate --- */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* Makes padding behave properly */
+}
+
+/* --- Theme Settings --- 
+   I've put everything in variables so we can tweak the 
+   colors and spacing in one place without breaking things.
+*/
+:root {
+  /* The main dark gradient colors */
+  --bg-start: #0f0c29;
+  --bg-mid: #302b63;
+  --bg-end: #24243e;
+
+  /* Glassmorphism settings: semi-transparent white with a bit of blur */
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-shadow: rgba(0, 0, 0, 0.25);
+
+  /* Typography colors */
+  --text-primary: #f0eef6;
+  --text-secondary: #a9a4c0;
+  --text-solved: #6ee7b7; /* Nice mint green for solved numbers */
+  --text-user: #f0eef6;
+
+  /* The "Indigo" accent color for highlights and glows */
+  --accent: #818cf8;
+  --accent-glow: rgba(129, 140, 248, 0.45);
+
+  /* Feedback colors (Red for mistakes, Green for success) */
+  --error-bg: rgba(239, 68, 68, 0.15);
+  --error-border: rgba(239, 68, 68, 0.6);
+  --error-text: #fca5a5;
+
+  --success-bg: rgba(52, 211, 153, 0.12);
+  --success-border: rgba(52, 211, 153, 0.5);
+  --success-text: #6ee7b7;
+
+  /* Cell specific styling */
+  --cell-bg: rgba(255, 255, 255, 0.04);
+  --cell-focus: rgba(129, 140, 248, 0.18);
+  --cell-error: rgba(239, 68, 68, 0.22);
+
+  /* Border widths (Sudoku needs thin lines AND thick lines) */
+  --border-thin: 1px solid rgba(0, 0, 0, 0.3);
+  --border-thick: 2.5px solid #000;
+
+  --radius-sm: 6px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+
+  --transition-fast: 0.18s ease;
+  --transition-med: 0.3s ease;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--bg-start), var(--bg-mid), var(--bg-end));
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+/* --- Eye-Candy: Animated Background Blobs --- 
+   These just float around to make the background feel alive.
+   We blur them heavily so they look like soft glowing clouds.
+*/
+.background-blobs {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none; /* Don't let these block mouse clicks */
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.35;
+  animation: float 18s ease-in-out infinite alternate;
+}
+
+.blob-1 {
+  width: 420px;
+  height: 420px;
+  background: #6366f1;
+  top: -10%;
+  left: -5%;
+  animation-delay: 0s;
+}
+
+.blob-2 {
+  width: 350px;
+  height: 350px;
+  background: #a855f7;
+  bottom: -8%;
+  right: -4%;
+  animation-delay: -6s;
+}
+
+.blob-3 {
+  width: 280px;
+  height: 280px;
+  background: #ec4899;
+  top: 40%;
+  left: 55%;
+  animation-delay: -12s;
+}
+
+/* Makes the blobs drift slowly */
+@keyframes float {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(40px, -30px) scale(1.08); }
+  100% { transform: translate(-20px, 20px) scale(0.95); }
+}
+
+/* --- Layout Container --- */
+.container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
+  width: 100%;
+  max-width: 560px;
+}
+
+/* --- Header Section --- */
+.header {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+/* That cool glowing, multi-color gradient text */
+.header h1 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #f0abfc, #818cf8, #34d399, #fbbf24);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-shift 6s ease infinite;
+  filter: drop-shadow(0 0 18px rgba(129, 140, 248, 0.4));
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.subtitle {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  color: #c4b5fd;
+  font-weight: 400;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* --- The Glass Card --- 
+   This is the "Frosted Glass" container for the game.
+*/
+.card {
+  width: 100%;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  backdrop-filter: blur(20px); /* The magic ingredient for glassmorphism */
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px var(--glass-shadow),
+              inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================================
+   THE BOARD — 9x9 CSS Grid
+   ============================================================ */
+.board {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  gap: 0;
+  width: 100%;
+  aspect-ratio: 1 / 1; /* Keeps it a perfect square */
+  border: var(--border-thick);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+/* Individual Cell Styling */
+.cell {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-user);
+  background: var(--cell-bg);
+  border: var(--border-thin);
+  outline: none;
+  caret-color: var(--accent); /* Color of the blinking typing cursor */
+  transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+  appearance: textfield; 
+}
+
+/* Wipe out the ugly number arrows in Chrome/Safari */
+.cell::-webkit-outer-spin-button,
+.cell::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* When a user clicks into a cell */
+.cell:focus {
+  background: var(--cell-focus);
+  box-shadow: inset 0 0 0 2px var(--accent);
+  z-index: 2;
+  position: relative;
+}
+
+/* --- THE SUDOKU GRID MATH --- 
+   This handles the thicker borders for the 3x3 sub-grids.
+*/
+
+/* Draw thick lines after the 3rd and 6th columns */
+.cell:nth-child(9n+3),
+.cell:nth-child(9n+6) {
+  border-right: var(--border-thick);
+}
+
+/* Draw thick lines after the 3rd and 6th rows */
+.cell:nth-child(n+19):nth-child(-n+27),
+.cell:nth-child(n+46):nth-child(-n+54) {
+  border-bottom: var(--border-thick);
+}
+
+/* --- Visual Feedback States --- */
+
+/* The "Pop-In" animation for when a cell is solved */
+.cell.solved {
+  color: var(--text-solved);
+  font-weight: 500;
+  animation: pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes pop-in {
+  0%   { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+
+/* Shakes the cell if there's a duplicate or error */
+.cell.error {
+  background: var(--cell-error);
+  color: var(--error-text);
+  animation: shake 0.35s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}
+
+/* ============================================================
+   MESSAGE BAR — Status updates
+   ============================================================ */
+.message-bar {
+  margin-top: 1.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+  transition: opacity var(--transition-med), transform var(--transition-med);
+}
+
+.message-bar.hidden {
+  display: none;
+}
+
+.message-bar.error {
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error-text);
+}
+
+.message-bar.success {
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success-text);
+}
+
+/* ============================================================
+   CONTROLS — Buttons
+   ============================================================ */
+.controls {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  justify-content: center;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.6rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 50px; /* Makes them pill-shaped */
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.btn:active {
+  transform: scale(0.96); /* Gives a satisfying click feel */
+}
+
+/* The Green "Solve" Button */
+.btn-primary {
+  background: linear-gradient(135deg, #34d399, #059669);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(52, 211, 153, 0.45);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 22px rgba(52, 211, 153, 0.55);
+  transform: translateY(-1px);
+}
+
+/* The Red "Clear" Button */
+.btn-secondary {
+  background: linear-gradient(135deg, #f87171, #dc2626);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(248, 113, 113, 0.35);
+}
+
+.btn-secondary:hover {
+  box-shadow: 0 6px 22px rgba(201, 11, 11, 0.5);
+  transform: translateY(-1px);
+}
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 480px) {
+  .card {
+    padding: 1.25rem;
+    border-radius: var(--radius-md);
+  }
+
+  .header h1 { font-size: 1.8rem; }
+  .cell { font-size: 1rem; }
+  .btn { padding: 0.6rem 1.2rem; font-size: 0.85rem; }
+}
+
+/* ============================================================
+   VICTORY PARTY (Confetti)
+   ============================================================ */
+.confetti-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  top: -20px;
+  border-radius: 2px;
+  animation: confetti-fall linear forwards;
+}
+
+@keyframes confetti-fall {
+  0%   { transform: translateY(0) rotate(0deg);   opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
